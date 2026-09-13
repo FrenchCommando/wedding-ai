@@ -26,7 +26,9 @@ jobs:
         working-directory: render
         env:
           CHROME_PATH: C:\Program Files\Google\Chrome\Application\chrome.exe
+        shell: bash
         run: |
+          set -e
           node extract.js
           powershell -NoProfile -ExecutionPolicy Bypass -File tts.ps1
           node record.js

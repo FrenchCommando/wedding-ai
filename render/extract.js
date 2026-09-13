@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer-core');
 const fs = require('fs');
 (async () => {
   const path = require('path');
+  fs.mkdirSync(path.join(__dirname, 'out'), { recursive: true });
   const b = await puppeteer.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe', headless: true });
   const p = await b.newPage();
   await p.goto('file:///' + path.join(__dirname, '..', 'keynote.html').replace(/\\/g, '/'));
