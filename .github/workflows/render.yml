@@ -1,0 +1,51 @@
+name: Render keynote
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  video:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: npm ci
+        working-directory: render
+      - run: pip install imageio-ffmpeg
+      - name: Render
+        working-directory: render
+        env:
+          CHROME_PATH: C:\Program Files\Google\Chrome\Application\chrome.exe
+        run: |
+          node extract.js
+          powershell -NoProfile -ExecutionPolicy Bypass -File tts.ps1
+          node record.js
+          python encode.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: keynote
+          path: keynote.mp4
+          compression-level: 0
+
+  pages:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdir site && cp keynote.html site/index.html && cp SCRIPT.md site/
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: site }
+      - id: deploy
+        uses: actions/deploy-pages@v4

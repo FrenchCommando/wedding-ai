@@ -1,0 +1,8 @@
+{
+  "name": "keynote-render",
+  "private": true,
+  "type": "commonjs",
+  "dependencies": {
+    "puppeteer-core": "^25.10.0"
+  }
+}
