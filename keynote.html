@@ -191,6 +191,26 @@ const SLIDES = [
  {k:.3,h:300,l:[[7,"The wedding is in October. Two hundred and twelve guests. Gary and Randy are on opposite sides of the room. Nobody wrote a graph."],[4,"Thank you. I'm at table nine."],[4,"[walk off before the applause peaks. that's the trick.]"]]},
 ];
 
+// ---------- narration: if CI published narration.mp3 + timing.json next to the page, play it in sync ----------
+let audio=null;
+fetch('timing.json').then(r=>r.ok?r.json():null).then(t=>{
+  if(!t) return;
+  for(const x of t) SLIDES[x.s].l[x.j][0]=x.dur;
+  audio=new Audio('narration.mp3'); audio.preload='auto';
+}).catch(()=>{});
+function beatOffset(){
+  let o=0;
+  for(let i=0;i<s;i++) for(const b of SLIDES[i].l) o+=b[0];
+  for(let j=0;j<beat;j++) o+=SLIDES[s].l[j][0];
+  return o;
+}
+function syncAudio(){
+  if(!audio||!playing) return;
+  const want=beatOffset();
+  if(Math.abs(audio.currentTime-want)>0.35) audio.currentTime=want;
+  if(audio.paused) audio.play().catch(()=>{});
+}
+
 // ---------- stage mode: wide shot of an auditorium, the deck on the big screen ----------
 const STAGE = new URLSearchParams(location.search).has('stage');
 let shot, speaker, lower, sub, cam='wide', camSince=0, beatN=0;
@@ -286,6 +306,7 @@ function go(i,b=0){
 function schedule(){
   clearTimeout(timer);
   const b=SLIDES[s].l[beat]; if(!b) return;
+  syncAudio();
   timer=setTimeout(()=>{
     if(beat+1<SLIDES[s].l.length){beat++;showBeat();beatStart=performance.now();schedule();}
     else if(s+1<SLIDES.length) go(s+1);
@@ -293,7 +314,7 @@ function schedule(){
   }, b[0]*1000);
 }
 function play(){playing=true;playBtn.textContent='❚❚ Pause';beatStart=performance.now();schedule();}
-function stop(){playing=false;playBtn.textContent='▶ Play talk';clearTimeout(timer);}
+function stop(){playing=false;playBtn.textContent='▶ Play talk';clearTimeout(timer);if(audio)audio.pause();}
 playBtn.onclick=()=>playing?stop():play();
 document.getElementById('next').onclick=()=>step(1);
 document.getElementById('prev').onclick=()=>step(-1);

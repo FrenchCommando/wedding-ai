@@ -40,8 +40,13 @@ jobs:
           name: keynote
           path: keynote.mp4
           compression-level: 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-audio
+          path: render/out/web
 
   pages:
+    needs: video
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -49,6 +54,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: mkdir site && cp keynote.html site/index.html && cp SCRIPT.md site/
+      - uses: actions/download-artifact@v4
+        with:
+          name: web-audio
+          path: site
       - uses: actions/upload-pages-artifact@v3
         with: { path: site }
       - id: deploy

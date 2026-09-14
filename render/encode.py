@@ -50,3 +50,10 @@ run(
     str(Path(__file__).parent.parent / "keynote.mp4"),
 )
 print("wrote keynote.mp4")
+
+# web bundle: the same mix as MP3 plus the timings, so the deck can narrate itself on GitHub Pages
+WEB = OUT / "web"
+WEB.mkdir(exist_ok=True)
+run("-i", str(MIX / "mix.wav"), "-c:a", "libmp3lame", "-b:a", "96k", str(WEB / "narration.mp3"))
+(WEB / "timing.json").write_text(json.dumps([{"s": t["s"], "j": t["j"], "dur": t["dur"]} for t in timing]), "utf-8")
+print("wrote out/web")
