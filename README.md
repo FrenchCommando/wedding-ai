@@ -20,11 +20,11 @@ Marion built a wedding-planning website by describing it to an AI at three in th
 Every push to `main` runs the workflow in `.github/workflows/render.yml`:
 
 1. Reads the spoken lines out of `keynote.html`.
-2. Synthesizes each line with the Windows built-in voice, one clip per line, and measures it.
+2. Synthesizes each line with a Microsoft neural voice, one clip per line, and measures it.
 3. Applies the sound design: hall slap on every line, and on the loop-pedal slide a long delay, pitch drift, a stacked self-loop of "There's no door", and a beat.
 4. Plays the deck in headless Chrome with each slide timed to its clip, and screencasts it.
 5. Muxes frames and audio with ffmpeg.
 
 The result is uploaded as the `keynote` build artifact on the run, and the deck is deployed to GitHub Pages.
 
-The CI runner only has English voices. A local render on a machine with the French voice installed pronounces Marion and Léa properly.
+The narrator is a French multilingual voice, so Marion speaks English with a French accent and says the names the French way. Same result locally and in CI.

@@ -21,7 +21,7 @@ jobs:
         with: { python-version: "3.12" }
       - run: npm ci
         working-directory: render
-      - run: pip install imageio-ffmpeg
+      - run: pip install imageio-ffmpeg edge-tts
       - name: Render
         working-directory: render
         env:
@@ -31,7 +31,7 @@ jobs:
         run: |
           set -e
           node extract.js
-          powershell -NoProfile -ExecutionPolicy Bypass -File tts.ps1
+          python tts.py
           python fx.py
           node record.js
           python encode.py
