@@ -26,7 +26,7 @@ process.on('unhandledRejection', e => { console.error(e); process.exit(1); });
   const url = 'file:///' + path.join(__dirname, '..', 'keynote.html').replace(/\\/g, '/') + (process.env.PLAIN ? '' : '?stage');
   await p.goto(url, { waitUntil: 'networkidle0' });
   await p.evaluate(() => document.fonts.ready);
-  await p.evaluate(() => { document.querySelector('footer .ctl').style.display = 'none'; const e = document.getElementById('exit'); if (e) e.remove(); });
+  await p.evaluate(() => { document.querySelector('.ctl').remove(); });
   await p.evaluate((t) => { for (const x of t) SLIDES[x.s].l[x.j][0] = x.dur; }, timing);
   await new Promise(r => setTimeout(r, 1500));
 

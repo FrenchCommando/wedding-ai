@@ -9,7 +9,7 @@ require('fs').mkdirSync(path.join(__dirname, 'out', 'snaps'), { recursive: true 
   await p.setViewport({ width: 1920, height: 1080 });
   await p.goto('file:///' + path.join(__dirname, '..', 'keynote.html').replace(/\\/g, '/') + '?stage', { waitUntil: 'networkidle0' });
   await p.evaluate(() => document.fonts.ready);
-  await p.evaluate((s, j, c) => { document.getElementById('exit').remove(); go(+s, +j); if (c) { cam = c; camSince = performance.now(); } }, slide, beat, camArg);
+  await p.evaluate((s, j, c) => { document.querySelector('.ctl').remove(); go(+s, +j); if (c) { cam = c; camSince = performance.now(); } }, slide, beat, camArg);
   await new Promise(r => setTimeout(r, 1500));
   await p.screenshot({ path: path.join(__dirname, out) });
   console.log('saved', out, 'cam =', await p.evaluate(() => cam));
