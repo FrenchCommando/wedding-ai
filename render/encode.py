@@ -55,5 +55,10 @@ print("wrote keynote.mp4")
 WEB = OUT / "web"
 WEB.mkdir(exist_ok=True)
 run("-i", str(MIX / "mix.wav"), "-c:a", "libmp3lame", "-b:a", "96k", str(WEB / "narration.mp3"))
-(WEB / "timing.json").write_text(json.dumps([{"s": t["s"], "j": t["j"], "dur": t["dur"]} for t in timing]), "utf-8")
-print("wrote out/web")
+slim = [{"s": t["s"], "j": t["j"], "dur": t["dur"]} for t in timing]
+(WEB / "timing.js").write_text("window.TIMING=" + json.dumps(slim) + ";\n", "utf-8")
+# also next to keynote.html so the page narrates itself when opened from disk (both gitignored)
+import shutil
+for f in ("narration.mp3", "timing.js"):
+    shutil.copy(WEB / f, Path(__file__).parent.parent / f)
+print("wrote out/web and copied next to keynote.html")

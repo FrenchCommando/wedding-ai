@@ -177,6 +177,7 @@
   </footer>
 </div>
 
+<script src="timing.js"></script>
 <script>
 // ---------- script: per slide, [seconds, line] beats; intensity drives the plasma ----------
 const SLIDES = [
@@ -193,11 +194,10 @@ const SLIDES = [
 
 // ---------- narration: if CI published narration.mp3 + timing.json next to the page, play it in sync ----------
 let audio=null;
-fetch('timing.json').then(r=>r.ok?r.json():null).then(t=>{
-  if(!t) return;
-  for(const x of t) SLIDES[x.s].l[x.j][0]=x.dur;
+if(window.TIMING){
+  for(const x of TIMING) SLIDES[x.s].l[x.j][0]=x.dur;
   audio=new Audio('narration.mp3'); audio.preload='auto';
-}).catch(()=>{});
+}
 function beatOffset(){
   let o=0;
   for(let i=0;i<s;i++) for(const b of SLIDES[i].l) o+=b[0];
