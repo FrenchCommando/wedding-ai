@@ -14,9 +14,9 @@ const log = m => fs.appendFileSync(path.join(REC, 'log.txt'), m + '\n');
   });
   const p = await b.newPage();
   await p.setViewport({ width: 1920, height: 1080 });
-  await p.goto('file:///' + path.join(__dirname, '..', 'keynote.html').replace(/\\/g, '/'), { waitUntil: 'networkidle0' });
+  await p.goto('file:///' + path.join(__dirname, '..', 'keynote.html').replace(/\\/g, '/') + (process.env.PLAIN ? '' : '?stage'), { waitUntil: 'networkidle0' });
   await p.evaluate(() => document.fonts.ready);
-  await p.evaluate(() => { document.querySelector('footer .ctl').style.display = 'none'; });
+  await p.evaluate(() => { document.querySelector('footer .ctl').style.display = 'none'; const e = document.getElementById('exit'); if (e) e.remove(); });
   await p.evaluate((t) => { for (const x of t) SLIDES[x.s].l[x.j][0] = x.dur; }, timing);
   await new Promise(r => setTimeout(r, 1500));
 

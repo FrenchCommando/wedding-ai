@@ -58,6 +58,56 @@
   .ctl button:hover,.ctl button:focus-visible{border-color:var(--lime);outline:none}
   .ctl kbd{opacity:.7}
   @media (max-width:600px){header{padding:12px 16px 0}.ctl kbd{display:none}main{padding:0 16px}footer{padding:0 16px 14px}}
+
+  /* ---------- stage mode: the deck becomes the screen inside a wide shot ---------- */
+  body.stage{background:#000}
+  #scene{position:fixed;left:50%;top:50%;width:1920px;height:1080px;margin:-540px 0 0 -960px;overflow:hidden;
+         transform-origin:center;background:radial-gradient(ellipse at 50% 30%,#1a0b2a 0%,#0a0412 55%,#030108 100%)}
+  #shot{position:absolute;inset:0;transform-origin:0 0;transition:none}
+  .wall{position:absolute;inset:0;background:
+     radial-gradient(ellipse 900px 500px at 50% 8%,rgba(255,63,164,.18),transparent 70%),
+     linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,.35) 100%)}
+  .spot{position:absolute;top:-60px;width:900px;height:1100px;pointer-events:none;mix-blend-mode:screen;opacity:.55;
+        background:radial-gradient(ellipse at 50% 0%,var(--spot,rgba(255,200,87,.55)) 0%,transparent 60%);filter:blur(10px)}
+  .spot.l{left:-260px;transform:rotate(-14deg)}.spot.r{right:-260px;transform:rotate(14deg)}
+  .floor{position:absolute;left:0;right:0;top:730px;height:350px;
+         background:linear-gradient(180deg,#160a24 0%,#0b0513 40%,#050209 100%)}
+  .floor:before{content:"";position:absolute;left:390px;top:0;width:1140px;height:260px;
+         background:linear-gradient(180deg,rgba(200,120,255,.22),transparent 80%);filter:blur(18px)}
+  .edge{position:absolute;left:0;right:0;top:728px;height:3px;background:linear-gradient(90deg,transparent,rgba(255,63,164,.6),rgba(77,226,255,.5),transparent)}
+  .screen{position:absolute;left:410px;top:110px;width:1100px;height:619px;background:#000;
+          box-shadow:0 0 0 6px #0c0714,0 0 0 8px #241634,0 40px 120px rgba(255,63,164,.18),0 0 80px rgba(77,226,255,.12)}
+  body.stage #stage{position:absolute;inset:auto;left:0;top:0;width:1920px;height:1080px;transform:scale(.5729);transform-origin:0 0}
+  body.stage #stage canvas#bg,body.stage #vig{position:absolute}
+  .lectern{position:absolute;left:1420px;top:560px;width:170px;height:200px;
+           background:linear-gradient(180deg,#2a1640,#120823);border-top:6px solid #3d2358;
+           clip-path:polygon(6% 0,94% 0,100% 100%,0 100%)}
+  .lectern:after{content:"";position:absolute;left:30%;top:40%;width:40%;height:3px;background:var(--lime);opacity:.5;box-shadow:0 0 12px var(--lime)}
+  .speaker{position:absolute;left:1435px;top:400px;width:140px;height:200px;transform-origin:50% 100%;animation:sway 6s ease-in-out infinite}
+  .speaker svg{width:100%;height:100%;overflow:visible}
+  .speaker .arm{transform-box:view-box;transform-origin:24px 120px;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .speaker.gesture .arm{transform:rotate(-70deg)}
+  @keyframes sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+  .crowd{position:absolute;left:0;right:0;bottom:0;height:300px;pointer-events:none}
+  .lower{position:absolute;left:120px;bottom:120px;display:grid;gap:2px;font-family:var(--mono);
+         opacity:0;transform:translateY(12px);transition:opacity .5s,transform .5s}
+  .lower.on{opacity:1;transform:none}
+  .lower b{font-family:var(--body);font-weight:600;font-style:italic;font-size:44px;color:var(--cream);background:rgba(20,6,31,.85);padding:6px 18px;
+           border-left:6px solid var(--magenta)}
+  .lower span{font-size:16px;letter-spacing:.2em;text-transform:uppercase;color:var(--lime);background:rgba(20,6,31,.85);padding:6px 18px 8px 24px;justify-self:start}
+  .bug{position:absolute;right:120px;top:70px;font-family:var(--mono);font-size:14px;letter-spacing:.2em;text-transform:uppercase;color:var(--cream-dim);
+       display:flex;gap:10px;align-items:center}
+  .bug i{width:9px;height:9px;border-radius:50%;background:#ff3b3b;box-shadow:0 0 10px #ff3b3b;animation:blink 1.4s infinite}
+  #sub{position:absolute;left:50%;bottom:48px;transform:translateX(-50%);max-width:1400px;text-align:center;
+       font-family:var(--body);font-style:italic;font-weight:300;font-size:36px;line-height:1.3;color:var(--cream);
+       background:rgba(4,1,8,.72);padding:10px 28px;border-radius:6px;text-wrap:balance}
+  #sub:empty{display:none}
+  #sub .dir{font-style:normal;font-family:var(--mono);font-size:.55em;letter-spacing:.1em;text-transform:uppercase;color:var(--lime)}
+  body.stage footer .ctl{display:none}
+  #exit{position:fixed;right:14px;bottom:12px;z-index:9;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;
+        color:var(--cream-dim);text-decoration:none;border:1px solid rgba(247,238,249,.22);border-radius:999px;padding:8px 14px;background:rgba(0,0,0,.5)}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+         background:repeating-linear-gradient(0deg,rgba(255,255,255,.4) 0 1px,transparent 1px 3px)}
   @media (prefers-reduced-motion:reduce){.slide,h1.loud,header .live i{animation:none}}
 </style>
 
@@ -123,6 +173,7 @@
       <button id="play">▶ Play talk</button>
       <button id="prev">‹ Prev</button>
       <button id="next">Next ›</button>
+      <a id="stagelink" href="?stage" style="font:inherit;color:var(--cream);background:rgba(247,238,249,.08);border:1px solid rgba(247,238,249,.22);border-radius:999px;padding:8px 16px;text-decoration:none">Stage view</a>
       <kbd>space · ← →</kbd>
     </div>
   </footer>
@@ -142,6 +193,80 @@ const SLIDES = [
  {k:.3,h:300,l:[[7,"The wedding is in October. Two hundred and twelve guests. Gary and Randy are on opposite sides of the room. Nobody wrote a graph."],[4,"Thank you. I'm at table nine."],[4,"[walk off before the applause peaks. that's the trick.]"]]},
 ];
 
+// ---------- stage mode: wide shot of an auditorium, the deck on the big screen ----------
+const STAGE = new URLSearchParams(location.search).has('stage');
+let shot, speaker, lower, sub, cam='wide', camSince=0, beatN=0;
+if(STAGE){
+  document.body.classList.add('stage');
+  const scene=document.createElement('div'); scene.id='scene';
+  shot=document.createElement('div'); shot.id='shot';
+  shot.innerHTML=`
+    <div class="wall"></div><div class="spot l"></div><div class="spot r"></div>
+    <div class="floor"></div><div class="edge"></div>
+    <div class="screen"></div>
+    <div class="lectern"></div>
+    <div class="speaker"><svg viewBox="0 0 140 200">
+      <defs><linearGradient id="rim" x1="0" x2="1"><stop offset="0" stop-color="#05020a"/><stop offset=".85" stop-color="#0d0618"/><stop offset="1" stop-color="#ff3fa4" stop-opacity=".55"/></linearGradient></defs>
+      <path d="M20 200 L26 118 Q30 92 58 84 L82 84 Q110 92 114 118 L120 200 Z" fill="url(#rim)"/>
+      <circle cx="70" cy="58" r="26" fill="url(#rim)"/>
+      <rect x="62" y="80" width="16" height="10" fill="#08030f"/>
+      <g class="arm"><path d="M20 20 L14 110 L30 112 L38 40 Z" transform="translate(4 100)" fill="#0b0514"/></g>
+      <path d="M110 118 L122 190 L106 192 L98 122 Z" fill="#0b0514"/>
+    </svg></div>
+    <svg class="crowd" viewBox="0 0 1920 300" preserveAspectRatio="none"></svg>
+    <div class="grain"></div>
+    <div class="bug"><i></i> Live · Main stage</div>
+    <div class="lower"><b>Marion</b><span>Bride, backend · Relationships &amp; Runtimes</span></div>
+    <div id="sub"></div>`;
+  const st=document.getElementById('stage');
+  scene.appendChild(shot); document.body.appendChild(scene);
+  shot.querySelector('.screen').appendChild(st);
+  for(const sel of ['.bug','.lower','#sub']) scene.appendChild(shot.querySelector(sel)); // overlay layer, not zoomed
+  const exit=document.createElement('a'); exit.id='exit'; exit.href='.'; exit.textContent='Exit stage view'; document.body.appendChild(exit);
+  speaker=shot.querySelector('.speaker'); lower=scene.querySelector('.lower'); sub=scene.querySelector('#sub');
+  // audience: three rows of heads, bigger in front, deterministic layout
+  let seed=7; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const crowd=shot.querySelector('.crowd'); let heads='';
+  [[240,44,.95],[170,36,.8],[110,28,.6]].forEach(([y,r,o],row)=>{
+    for(let x=-40;x<1980;x+=r*2.1+rnd()*30){
+      const rr=r*(0.85+rnd()*.3), yy=y+rnd()*14;
+      heads+=`<ellipse cx="${x.toFixed(0)}" cy="${(300-yy).toFixed(0)}" rx="${rr.toFixed(0)}" ry="${(rr*1.15).toFixed(0)}" fill="#04010a" opacity="${o}"/>
+              <ellipse cx="${x.toFixed(0)}" cy="${(300-yy).toFixed(0)}" rx="${rr.toFixed(0)}" ry="${(rr*1.15).toFixed(0)}" fill="none" stroke="rgba(120,80,200,${(.25*o).toFixed(2)})" stroke-width="2"/>
+              <rect x="${(x-rr*1.3).toFixed(0)}" y="${(300-yy+rr*.9).toFixed(0)}" width="${(rr*2.6).toFixed(0)}" height="${(rr*2).toFixed(0)}" rx="${rr*.6}" fill="#04010a" opacity="${o}"/>`;
+    }
+  });
+  crowd.innerHTML=heads;
+  setTimeout(()=>lower.classList.add('on'),1200); setTimeout(()=>lower.classList.remove('on'),9000);
+}
+// each shot: zoom k centred on scene point (cx,cy); transform-origin is the frame centre
+const CAMS={
+  wide:    {k:1,    cx:960,  cy:540},
+  close:   {k:1.745,cx:960,  cy:420},  // the screen fills the frame
+  speaker: {k:2.4,  cx:1505, cy:480},  // lectern close-up
+  threeq:  {k:1.3,  cx:1180, cy:440},  // screen and speaker together
+};
+const CUTS=['wide','close','threeq','close','speaker','wide','close','threeq','close','wide','speaker','close'];
+function stageBeat(text){
+  beatN++;
+  const dir=text.startsWith('[');
+  cam = dir ? 'speaker' : (s===SLIDES.length-1 && beat>0 ? 'wide' : CUTS[beatN%CUTS.length]);
+  camSince=performance.now();
+  sub.innerHTML = dir ? `<span class="dir">${text}</span>` : text;
+  sub.style.visibility = cam==='close' ? 'hidden' : 'visible';
+  if(!dir){ speaker.classList.add('gesture'); setTimeout(()=>speaker.classList.remove('gesture'),900+Math.random()*700); }
+  if(s===SLIDES.length-1 && beat===1){ lower.classList.add('on'); }
+}
+function stageFrame(t){
+  // slow push-in on every shot, like an operator creeping the zoom; hard cuts between shots
+  const age=(performance.now()-camSince)/1000, push=1+Math.min(age,25)*0.0018;
+  const {k,cx,cy}=CAMS[cam], K=k*push;
+  shot.style.transformOrigin='960px 540px';
+  shot.style.transform=`translate(${(-K*(cx-960)).toFixed(1)}px,${(-K*(cy-540)).toFixed(1)}px) scale(${K.toFixed(4)})`;
+  const h=cur.h, hue=`hsl(${(h+30)%360} 90% 60% / .5)`, hue2=`hsl(${(h+200)%360} 90% 60% / .45)`;
+  shot.querySelector('.spot.l').style.setProperty('--spot',hue);
+  shot.querySelector('.spot.r').style.setProperty('--spot',hue2);
+}
+
 // ---------- state ----------
 const els=[...document.querySelectorAll('.slide')], cap=document.getElementById('caption'),
       prog=document.getElementById('prog'), counter=document.getElementById('counter'), playBtn=document.getElementById('play');
@@ -150,6 +275,7 @@ let s=0, beat=0, playing=false, timer=null, beatStart=0, target={k:.35,h:300}, c
 function showBeat(){
   const b=SLIDES[s].l[beat]; if(!b) return;
   cap.innerHTML = b[1].startsWith('[') ? `<span class="dir">${b[1]}</span>` : b[1];
+  if(STAGE) stageBeat(b[1]);
 }
 function go(i,b=0){
   s=Math.max(0,Math.min(SLIDES.length-1,i)); beat=b;
@@ -188,7 +314,10 @@ const cv=document.getElementById('bg'), ctx=cv.getContext('2d');
 const W=160,H=90; const off=document.createElement('canvas'); off.width=W; off.height=H;
 const octx=off.getContext('2d'); const img=octx.createImageData(W,H); const px=img.data;
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-function fit(){cv.width=innerWidth;cv.height=innerHeight;ctx.imageSmoothingEnabled=true}
+function fit(){
+  cv.width=STAGE?1920:innerWidth; cv.height=STAGE?1080:innerHeight; ctx.imageSmoothingEnabled=true;
+  if(STAGE){ const k=Math.min(innerWidth/1920,innerHeight/1080); document.getElementById('scene').style.transform=`scale(${k})`; }
+}
 addEventListener('resize',fit); fit();
 function hsl(h,s,l){ // to rgb 0..255
   s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
@@ -210,6 +339,7 @@ function frame(){
   }
   octx.putImageData(img,0,0);
   ctx.drawImage(off,0,0,cv.width,cv.height);
+  if(STAGE) stageFrame(t);
   // progress
   const b=SLIDES[s].l[beat]; const p=playing&&b?Math.min(1,(performance.now()-beatStart)/(b[0]*1000)):0;
   const done=SLIDES.slice(0,s).reduce((a,x)=>a+x.l.length,0)+beat, total=SLIDES.reduce((a,x)=>a+x.l.length,0);

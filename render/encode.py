@@ -33,7 +33,7 @@ beat = 60 / 90
 kick = f"sin(2*PI*52*t)*exp(-10*mod(t,{beat}))"
 hat = f"(random(0)-0.5)*exp(-60*mod(t+{beat / 2},{beat}))"
 run(
-    "-f", "lavfi", "-i", f"aevalsrc={kick}*0.9+{hat}*0.25:s={22050}:d={length:.2f}",
+    "-f", "lavfi", "-i", f"aevalsrc='{kick}*0.9+{hat}*0.25':s=22050:d={length:.2f}",
     "-af", f"afade=t=in:d=2,afade=t=out:st={length - 3:.2f}:d=3,volume=0.35",
     str(OUT / "bed.wav"),
 )
