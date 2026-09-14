@@ -281,9 +281,9 @@ function stageFrame(t){
   const {k,cx,cy}=CAMS[cam], K=k*push;
   shot.style.transformOrigin='960px 540px';
   shot.style.transform=`translate(${(-K*(cx-960)).toFixed(1)}px,${(-K*(cy-540)).toFixed(1)}px) scale(${K.toFixed(4)})`;
-  const h=cur.h, hue=`hsl(${(h+30)%360} 90% 60% / .5)`, hue2=`hsl(${(h+200)%360} 90% 60% / .45)`;
-  shot.querySelector('.spot.l').style.setProperty('--spot',hue);
-  shot.querySelector('.spot.r').style.setProperty('--spot',hue2);
+  const pick=p=>{const li=Math.round((((p%1)+1)%1)*255)*3;return `rgb(${LUT[li]} ${LUT[li+1]} ${LUT[li+2]} / .5)`;};
+  shot.querySelector('.spot.l').style.setProperty('--spot',pick(cur.h/360+0.3));
+  shot.querySelector('.spot.r').style.setProperty('--spot',pick(cur.h/360+0.65));
 }
 
 // ---------- state ----------
@@ -343,19 +343,26 @@ function hsl(h,s,l){ // to rgb 0..255
   s/=100;l/=100;const k=n=>(n+h/30)%12,a=s*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1)));
   return [255*f(0),255*f(8),255*f(4)];
 }
+// palette ramp: the deck's own colours, dark ground → violet → magenta → gold → lime → cyan → back. Never brown.
+const RAMP=[[20,6,31],[70,20,110],[255,63,164],[255,200,87],[200,255,61],[77,226,255],[70,20,110],[20,6,31]];
+const LUT=new Uint8ClampedArray(256*3);
+for(let i=0;i<256;i++){
+  const p=i/255*(RAMP.length-1), a=Math.floor(p), f=p-a, A=RAMP[a], B=RAMP[Math.min(a+1,RAMP.length-1)];
+  for(let c=0;c<3;c++) LUT[i*3+c]=A[c]+(B[c]-A[c])*f;
+}
 let t=0;
 function frame(){
   cur.k+=(target.k-cur.k)*.02; let dh=((target.h-cur.h+540)%360)-180; cur.h+=dh*.02;
   t+=reduced?0.002:0.006+cur.k*0.02;
-  const k=cur.k, sat=35+55*k, amp=1+k*3;
+  const k=cur.k, amp=1+k*3, shift=cur.h/360, span=0.25+0.75*k, dim=0.45+0.55*k;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
     const u=x/W*amp*Math.PI*2, v=y/H*amp*Math.PI*2;
     const val=Math.sin(u+t)+Math.sin((v+t)*.8)+Math.sin((u+v+t*1.3)*.5)+Math.sin(Math.hypot(u-amp*3,v-amp*3)*.9-t*1.6);
     const n=(val+4)/8;
-    const hue=(cur.h+n*(60+240*k)+Math.sin(t*.5)*20)%360;
-    const light=8+n*n*(16+34*k);
-    const [r,g,b]=hsl(hue,sat,light); const i=(y*W+x)*4;
-    px[i]=r;px[i+1]=g;px[i+2]=b;px[i+3]=255;
+    const pos=((shift+n*span+Math.sin(t*.5)*.05)%1+1)%1;      // where on the ramp
+    const w=Math.pow(n,1.6)*dim;                               // how far up from the dark ground
+    const li=Math.round(pos*255)*3, i=(y*W+x)*4;
+    px[i]=20+(LUT[li]-20)*w; px[i+1]=6+(LUT[li+1]-6)*w; px[i+2]=31+(LUT[li+2]-31)*w; px[i+3]=255;
   }
   octx.putImageData(img,0,0);
   ctx.drawImage(off,0,0,cv.width,cv.height);
