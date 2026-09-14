@@ -31,6 +31,7 @@ jobs:
           set -e
           node extract.js
           powershell -NoProfile -ExecutionPolicy Bypass -File tts.ps1
+          python fx.py
           node record.js
           python encode.py
       - uses: actions/upload-artifact@v4

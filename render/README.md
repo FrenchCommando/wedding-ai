@@ -7,6 +7,7 @@ npm install                      # puppeteer-core, drives the installed Chrome
 python -m venv venv && venv\Scripts\pip install imageio-ffmpeg
 node extract.js                  # out/beats.json  — the spoken lines, read from SLIDES in keynote.html
 powershell -File tts.ps1         # out/bNN.wav + out/timing.json — one clip per line, measured
+venv\Scripts\python fx.py        # out/xNN.wav — delay, pitch drift, the stacked loop; timing.json updated
 node record.js                   # out/fNNNNN.jpg + out/frames.txt — screencast, slides timed to the clips
 venv\Scripts\python encode.py    # ../keynote.mp4
 ```
