@@ -1,6 +1,6 @@
 """Sound design on the narration clips. Runs after tts.ps1, before record.js.
 
-Reads out/timing.json, writes out/xNN.wav, rewrites timing.json so slide
+Reads out/timing.json, writes out/fx/NN.wav, rewrites timing.json so slide
 timings follow the processed lengths. Slide 5 (index 4) is the loop-pedal
 moment: pitch drift, delay, a stacked loop of "There's no door", and a beat.
 """
@@ -36,9 +36,10 @@ TRIP = "aecho=0.8:0.75:140|290|450:0.45|0.3|0.18"  # slide 5: long stacked delay
 
 def main():
     timing = json.loads((OUT / "timing.json").read_text("utf-8-sig"))
+    (OUT / "fx").mkdir(exist_ok=True)
     for t in timing:
         src = Path(t["file"])
-        dst = OUT / f"x{t['i']:02d}.wav"
+        dst = OUT / "fx" / f"{t['i']:02d}.wav"
         text = t["t"]
         if text.startswith("["):
             run("-i", str(src), str(dst))

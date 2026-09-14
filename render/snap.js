@@ -1,7 +1,8 @@
 // One still of the stage view at a given slide/beat: node snap.js [slide] [beat] [out.png]
 const puppeteer = require('puppeteer-core');
 const path = require('path');
-const [slide = 4, beat = 3, out = 'out/snap.png'] = process.argv.slice(2);
+const [slide = 4, beat = 3, out = `out/snaps/s${slide}b${beat}.png`] = process.argv.slice(2);
+require('fs').mkdirSync(path.join(__dirname, 'out', 'snaps'), { recursive: true });
 (async () => {
   const b = await puppeteer.launch({ executablePath: process.env.CHROME_PATH || 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe', headless: true });
   const p = await b.newPage();

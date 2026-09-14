@@ -26,6 +26,7 @@ jobs:
         working-directory: render
         env:
           CHROME_PATH: C:\Program Files\Google\Chrome\Application\chrome.exe
+          PYTHON: python
         shell: bash
         run: |
           set -e

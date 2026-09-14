@@ -1,6 +1,7 @@
 Add-Type -AssemblyName System.Speech
 $dir = Join-Path $PSScriptRoot "out"
 $beats = Get-Content "$dir\beats.json" -Raw | ConvertFrom-Json
+New-Item -ItemType Directory -Force "$dir\voice" | Out-Null
 $syn = New-Object System.Speech.Synthesis.SpeechSynthesizer
 $syn.SelectVoice("Microsoft Zira Desktop")
 $syn.Rate = -1
@@ -11,7 +12,7 @@ $frVoice = if ($voices -contains "Microsoft Hortense Desktop") { "Microsoft Hort
 $out = @()
 $i = 0
 foreach ($b in $beats) {
-  $f = "$dir\b{0:d2}.wav" -f $i
+  $f = "$dir\voice\{0:d2}.wav" -f $i
   if ($b.t.StartsWith("[")) {
     $dur = 2.5
     # silence: 22050 Hz 16-bit mono

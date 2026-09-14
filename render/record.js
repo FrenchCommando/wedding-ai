@@ -1,47 +1,63 @@
+// Plays the deck in headless Chrome and pipes the screencast into ffmpeg as a
+// constant 30 fps H.264 stream -> out/video/stage.mp4. No frames touch the disk.
 const puppeteer = require('puppeteer-core');
+const { spawn, execFileSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const REC = path.join(__dirname, 'out');
-process.on('unhandledRejection', e => { console.error(e); process.exit(1); });
-const timing = JSON.parse(fs.readFileSync(path.join(REC, 'timing.json'), 'utf8').replace(/^﻿/, ''));
-const total = timing.reduce((a, b) => a + b.dur, 0);
 
-const log = m => fs.appendFileSync(path.join(REC, 'log.txt'), m + '\n');
-(async () => { try {
+const REC = path.join(__dirname, 'out');
+const FPS = 30;
+const timing = JSON.parse(fs.readFileSync(path.join(REC, 'timing.json'), 'utf8').replace(/^\uFEFF/, ''));
+const total = timing.reduce((a, b) => a + b.dur, 0);
+fs.mkdirSync(path.join(REC, 'video'), { recursive: true });
+const ffmpeg = execFileSync(
+  process.env.PYTHON || path.join(__dirname, 'venv', 'Scripts', 'python.exe'),
+  ['-c', 'import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())'], { encoding: 'utf8' }).trim();
+
+process.on('unhandledRejection', e => { console.error(e); process.exit(1); });
+
+(async () => {
   const b = await puppeteer.launch({
     executablePath: process.env.CHROME_PATH || 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
-    headless: true, args: ['--window-size=1920,1080', '--autoplay-policy=no-user-gesture-required'],
+    headless: true, args: ['--window-size=1920,1080'],
   });
   const p = await b.newPage();
   await p.setViewport({ width: 1920, height: 1080 });
-  await p.goto('file:///' + path.join(__dirname, '..', 'keynote.html').replace(/\\/g, '/') + (process.env.PLAIN ? '' : '?stage'), { waitUntil: 'networkidle0' });
+  const url = 'file:///' + path.join(__dirname, '..', 'keynote.html').replace(/\\/g, '/') + (process.env.PLAIN ? '' : '?stage');
+  await p.goto(url, { waitUntil: 'networkidle0' });
   await p.evaluate(() => document.fonts.ready);
   await p.evaluate(() => { document.querySelector('footer .ctl').style.display = 'none'; const e = document.getElementById('exit'); if (e) e.remove(); });
   await p.evaluate((t) => { for (const x of t) SLIDES[x.s].l[x.j][0] = x.dur; }, timing);
   await new Promise(r => setTimeout(r, 1500));
 
-  const cdp = await p.target().createCDPSession();
-  const frames = [];
-  let n = 0;
-  cdp.on('Page.screencastFrame', async ({ data, metadata, sessionId }) => {
-    fs.writeFileSync(path.join(REC, `f${String(n).padStart(5, '0')}.jpg`), Buffer.from(data, 'base64'));
-    frames.push({ i: n, t: metadata.timestamp }); n++;
-    await cdp.send('Page.screencastFrameAck', { sessionId }).catch(() => {});
-  });
-  await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
-  await new Promise(r => setTimeout(r, 500));
-  await p.evaluate(() => play());
-  await new Promise(r => setTimeout(r, (total + 3) * 1000));
-  log('stopping '+frames.length); await cdp.send('Page.stopScreencast'); log('stopped');
+  const enc = spawn(ffmpeg, [
+    '-y', '-loglevel', 'error',
+    '-f', 'image2pipe', '-framerate', String(FPS), '-c:v', 'mjpeg', '-i', 'pipe:0',
+    '-vf', 'format=yuv420p', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '20', '-r', String(FPS),
+    path.join(REC, 'video', process.env.PLAIN ? 'plain.mp4' : 'stage.mp4'),
+  ], { stdio: ['pipe', 'inherit', 'inherit'] });
 
-  // concat demuxer list with per-frame durations
-  const lines = ['ffconcat version 1.0'];
-  for (let k = 0; k < frames.length; k++) {
-    const d = k + 1 < frames.length ? frames[k + 1].t - frames[k].t : 0.05;
-    lines.push(`file 'f${String(frames[k].i).padStart(5, '0')}.jpg'`, `duration ${d.toFixed(4)}`);
+  // latest screencast frame; a 30 Hz clock writes it to ffmpeg (dup or drop as needed)
+  let latest = null, written = 0;
+  const cdp = await p.target().createCDPSession();
+  cdp.on('Page.screencastFrame', ({ data, sessionId }) => {
+    latest = Buffer.from(data, 'base64');
+    cdp.send('Page.screencastFrameAck', { sessionId }).catch(() => {});
+  });
+  await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 90, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
+  while (!latest) await new Promise(r => setTimeout(r, 20));
+
+  const t0 = Date.now();
+  await p.evaluate(() => play());
+  const end = t0 + (total + 2) * 1000;
+  while (Date.now() < end) {
+    const due = Math.floor((Date.now() - t0) / 1000 * FPS);
+    while (written <= due) { if (!enc.stdin.write(latest)) await new Promise(r => enc.stdin.once('drain', r)); written++; }
+    await new Promise(r => setTimeout(r, 5));
   }
-  lines.push(`file 'f${String(frames[frames.length - 1].i).padStart(5, '0')}.jpg'`);
-  fs.writeFileSync(path.join(REC, 'frames.txt'), lines.join('\n'));
-  fs.writeFileSync(path.join(REC, 'audio.txt'), timing.map(x => `file '${path.basename(x.file)}'`).join('\n'));
-  console.log(frames.length, 'frames over', (frames[frames.length - 1].t - frames[0].t).toFixed(1), 's; audio', total.toFixed(1), 's');
-  await b.close(); log("done"); } catch(e){ log("ERR "+(e&&e.stack||e)); process.exit(1);} })();
+  await cdp.send('Page.stopScreencast');
+  enc.stdin.end();
+  await new Promise(r => enc.on('close', r));
+  console.log(`${written} frames at ${FPS} fps = ${(written / FPS).toFixed(1)} s; audio ${total.toFixed(1)} s`);
+  await b.close();
+})();
